@@ -311,7 +311,8 @@
     maxOptions: false,
     mobile: false,
     selectOnTab: false,
-    dropdownAlignRight: false
+    dropdownAlignRight: false,
+    dynamicLoad: false
   };
 
   Selectpicker.prototype = {
@@ -463,10 +464,25 @@
     },
 
     createView: function () {
-      var $drop = this.createDropdown(),
+       if (this.options.dynamicLoad == true){
+          return this.createDropdown()
+       }else{
+          var $drop = this.createDropdown(),
           li = this.createLi();
-
-      $drop.find('ul')[0].innerHTML = li;
+  
+          $drop.find('ul')[0].innerHTML = li;
+          return $drop;
+       }
+      
+    },
+    
+    dynamicView: function(){
+      var that = this;
+      var $li = that.createLi();
+      var $drop = that.$menu;
+            
+      $drop.find('ul').append($li);
+      that.render(true);
       return $drop;
     },
 
@@ -1138,7 +1154,8 @@
 
     clickListener: function () {
       var that = this,
-          $document = $(document);
+          $document = $(document),
+          blnMenuCreated = false;
 
       this.$newElement.on('touchstart.dropdown', '.dropdown-menu', function (e) {
         e.stopPropagation();
@@ -1154,6 +1171,14 @@
       });
 
       this.$button.on('click', function () {
+        if (that.options.dynamicLoad == true) {
+          //run only once
+          if (blnMenuCreated == false) {
+              that.dynamicView();
+              that.refresh();
+              blnMenuCreated = true;
+          }
+        }
         that.setSize();
       });
 
